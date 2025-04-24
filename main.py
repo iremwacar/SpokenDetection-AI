@@ -1,33 +1,37 @@
+import dlib
 import cv2
 from utils.face_detection import detect_face
 from utils.mouth_detection import get_mouth_landmarks, is_speaking
 
-# Kamera aç
+# Dlib yüz tespiti için face_detector ve shape_predictor kullan
+face_detector = dlib.get_frontal_face_detector()
+shape_predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+
+# Video veya webcam kullan
 cap = cv2.VideoCapture(0)
 
 while True:
     ret, frame = cap.read()
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    if not ret:
+        break
 
-    # Yüz tespiti
-    faces = detect_face(gray)
+    # Yüz tespiti yap (face_detector'ı burada kullanmaya gerek yok, detect_face fonksiyonu zaten bunu yapmalı)
+    faces = detect_face(frame)
 
     for face in faces:
-        # Yüz bölgesini çiz
-        x, y, w, h = (face.left(), face.top(), face.width(), face.height())
-        cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
+        # Ağız noktalarını al, shape_predictor'ı da geçiyoruz
+        mouth_points = get_mouth_landmarks(frame, face, shape_predictor)
 
-        # Ağız noktalarını al
-        mouth_points = get_mouth_landmarks(frame, face)
-
-        # Ağız açılma oranını hesapla ve konuşma durumunu kontrol et
+        # Konuşma tespiti
         if is_speaking(mouth_points):
-            cv2.putText(frame, "Konusuyor...", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            print("Konuşma Tespit Edildi")
+        else:
+            print("Konuşma Tespit Edilmedi")
 
-    # Görüntüyü göster
-    cv2.imshow("Face and Mouth Detection", frame)
+    # Çerçeveyi göster
+    cv2.imshow("Frame", frame)
 
-    # 'q' tuşuna basarak çık
+    # Çıkmak için 'q' tuşuna bas
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 

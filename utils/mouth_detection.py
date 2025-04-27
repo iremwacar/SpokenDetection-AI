@@ -12,14 +12,27 @@ def get_mouth_landmarks(image, face, shape_predictor):
         mouth_points.append((landmarks.part(i).x, landmarks.part(i).y))
     return mouth_points
 
-def is_speaking(mouth_points):
+def is_speaking(mouth_points, mode="near"):
     # Ağız genişliği (ağız noktalarındaki x mesafesi)
     mouth_width = np.linalg.norm(np.array(mouth_points[0]) - np.array(mouth_points[6]))
     
     # Ağız yüksekliği (ağız noktalarındaki y mesafesi)
     mouth_height = np.linalg.norm(np.array(mouth_points[3]) - np.array(mouth_points[9]))
 
+    # Eşik değerlerini belirleyelim (yakın ve uzak için farklı)
+    if mode == "near":
+        # Yakın mesafede daha küçük ağız hareketlerine duyarlılık
+        width_threshold = 55  # Ağız genişliği için daha büyük eşik
+        height_threshold = 35  # Ağız yüksekliği için daha büyük eşik
+    elif mode == "far":
+        width_threshold = 85  # Uzak mesafede daha büyük ağız hareketlerine duyarlılık
+        height_threshold = 65
+    else:
+        width_threshold = 60  # Varsayılan eşik değerleri
+        height_threshold = 45
+
     # Konuşma olup olmadığını belirlemek için ağız genişliğini ve yüksekliğini kontrol et
-    if mouth_width > 55 and mouth_height > 40:  # Bu değerleri ihtiyaca göre ayarlayın
+    if mouth_width > width_threshold and mouth_height > height_threshold:
         return True
     return False
+

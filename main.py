@@ -32,7 +32,7 @@ while True:
     gray_big = cv2.cvtColor(big_frame, cv2.COLOR_BGR2GRAY)
 
     if frame_count % 3 == 0:
-        faces = face_detector(gray_big, 1)  # upsample_num_times = 1
+        faces = face_detector(gray_big, 2)  # upsample_num_times = 1
         current_faces = []
 
         for face in faces:
@@ -70,21 +70,39 @@ while True:
 
     speaking_now = None
 
-    for face_id, (left, top, right, bottom) in current_faces:
-        rect = dlib.rectangle(left, top, right, bottom)
-        mouth_points = get_mouth_landmarks(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), rect, shape_predictor)
-
-        if is_speaking(mouth_points):
-            speaking_now = face_id
-            break
+    speaking_now_ids = []  # Konuşan yüzlerin ID'lerini liste olarak tut
 
     for face_id, (left, top, right, bottom) in current_faces:
-        if face_id == speaking_now:
+    # Büyük görüntü için koordinatları büyüt
+        left_big, top_big, right_big, bottom_big = int(left * 1.5), int(top * 1.5), int(right * 1.5), int(bottom * 1.5)
+        rect_big = dlib.rectangle(left_big, top_big, right_big, bottom_big)
+
+        mouth_points = get_mouth_landmarks(gray_big, rect_big, shape_predictor)
+
+        # 📏 Yüz genişliğini hesapla
+        face_width = right - left
+
+        # 🔎 Yüz yakın mı uzak mı kontrol et
+        if face_width > 100:
+            speaking = is_speaking(mouth_points, mode="near")  # Yakın mesafe
+        else:
+            speaking = is_speaking(mouth_points, mode="far")  # Uzak mesafe
+
+        if speaking:
+            speaking_now_ids.append(face_id)
+
+
+    for face_id, (left, top, right, bottom) in current_faces:
+        if face_id in speaking_now_ids:  # Bu yüz konuşuyorsa
             color = (0, 255, 0)  # Yeşil: konuşuyor
             face_timers[face_id] += 1
             cv2.rectangle(frame, (left, top), (right, bottom), color, 2)
             cv2.putText(frame, f"ID: {face_id} - {face_timers[face_id]}s", (left, top - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+        else:
+            # Konuşmayan kişilere istersen farklı renk çizebilirsin, mesela kırmızı çerçeve
+            color = (0, 0, 255)
+            cv2.rectangle(frame, (left, top), (right, bottom), color, 1)
 
     cv2.imshow('Spoken Detection', frame)
 

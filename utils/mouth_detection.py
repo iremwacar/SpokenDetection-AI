@@ -22,11 +22,11 @@ def is_speaking(mouth_points, mode="near"):
     # Eşik değerlerini belirleyelim (yakın ve uzak için farklı)
     if mode == "near":
         # Yakın mesafede daha küçük ağız hareketlerine duyarlılık
-        width_threshold = 55  # Ağız genişliği için daha büyük eşik
-        height_threshold = 35  # Ağız yüksekliği için daha büyük eşik
+        width_threshold = 70  # Ağız genişliği için daha büyük eşik
+        height_threshold = 50  # Ağız yüksekliği için daha büyük eşik
     elif mode == "far":
-        width_threshold = 85  # Uzak mesafede daha büyük ağız hareketlerine duyarlılık
-        height_threshold = 65
+        width_threshold = 45  # Uzak mesafede daha büyük ağız hareketlerine duyarlılık
+        height_threshold = 35
     else:
         width_threshold = 60  # Varsayılan eşik değerleri
         height_threshold = 45

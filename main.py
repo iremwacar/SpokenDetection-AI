@@ -83,10 +83,12 @@ while True:
         face_width = right - left
 
         # 🔎 Yüz yakın mı uzak mı kontrol et
-        if face_width > 100:
+        if face_width > 180:
             speaking = is_speaking(mouth_points, mode="near")  # Yakın mesafe
+            print(f"Yakın mesafe: {speaking}")
         else:
             speaking = is_speaking(mouth_points, mode="far")  # Uzak mesafe
+            print(f"Uzak mesafe: {speaking}")
 
         if speaking:
             speaking_now_ids.append(face_id)
